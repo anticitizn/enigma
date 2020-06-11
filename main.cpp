@@ -12,25 +12,22 @@
 #include "SDL_opengl.h"
 
 #include <shaders/shader.h>
-
+#include "camera.h"
 
 using namespace std;
 
 string shadersPath = "dependencies/include/shaders/";
 int running = 1;
 
-void processInput(SDL_Event* event)
-{
-	switch (event->key.keysym.sym)
-	{
-		case SDLK_ESCAPE:
-			running = 0;
-			break;
-		case SDL_QUIT:
-			running = 0;
-			break;
-	}
-}
+// camera
+Camera sceneCamera;
+
+// timing
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
+
+void processKeyboard(const Uint8* state);
+void processInput(SDL_Event* event);
 
 int main(int argc, char *argv[])
 {
@@ -56,6 +53,8 @@ int main(int argc, char *argv[])
 	SDL_GLContext context = SDL_GL_CreateContext(screen);
 	SDL_Event userEvent;
 	cout << "SDL initialized" << endl;
+
+	SDL_SetRelativeMouseMode(SDL_TRUE);
 
 	// Initializing GLAD, make sure it's after the OpenGL context initialization
 	if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
@@ -126,13 +125,11 @@ int main(int argc, char *argv[])
 	glEnableVertexAttribArray(0);
 
 	Shader sceneShader(shadersPath + "shader.vs", shadersPath + "shader.fs");
+	
 
 	// Matrix operations
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::rotate(model, glm::radians(-50.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
-	glm::mat4 view = glm::mat4(1.0f);
-	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 
 	glm::mat4 projection = glm::mat4(1.0f);
 	projection = glm::perspective(glm::radians(60.0f), 800.0f / 600.0f, 0.1f, 1000.0f);
@@ -147,12 +144,20 @@ int main(int argc, char *argv[])
 		sceneShader.use();
 
 		sceneShader.setUniform("model", model);
+		glm::mat4 view = sceneCamera.getViewMatrix();
 		sceneShader.setUniform("view", view);
 		sceneShader.setUniform("projection", projection);
 
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		SDL_GL_SwapWindow(screen);
 
+		float currentTime = SDL_GetTicks();
+		deltaTime = currentTime - lastFrame;
+		lastFrame = currentTime;
+
+		const Uint8* kbstate = SDL_GetKeyboardState(NULL);
+
+		processKeyboard(kbstate);
 		while (SDL_PollEvent(&userEvent))
 		{
 			processInput(&userEvent);
@@ -162,4 +167,36 @@ int main(int argc, char *argv[])
 	SDL_Quit();
 	cout << "Quit SDL" << endl;
 	exit(0);
+}
+
+void processKeyboard(const Uint8* state)
+{
+	if (state[SDL_SCANCODE_ESCAPE])
+		running = 0;
+
+	// camera movement
+	if(state[SDL_SCANCODE_W])
+		sceneCamera.processKeyboard("FRONT", deltaTime);
+	if (state[SDL_SCANCODE_S])
+		sceneCamera.processKeyboard("BACK", deltaTime);
+	if (state[SDL_SCANCODE_A])
+		sceneCamera.processKeyboard("LEFT", deltaTime);
+	if (state[SDL_SCANCODE_D])
+		sceneCamera.processKeyboard("RIGHT", deltaTime);
+	if (state[SDL_SCANCODE_SPACE])
+		sceneCamera.processKeyboard("UP", deltaTime);
+	if (state[SDL_SCANCODE_C])
+		sceneCamera.processKeyboard("DOWN", deltaTime);
+}
+
+void processInput(SDL_Event* event)
+{
+	switch (event->type)
+	{
+		
+		case SDL_MOUSEMOTION:
+			sceneCamera.processMouse(event->motion.xrel, event->motion.yrel);
+			break;
+	}
+
 }
