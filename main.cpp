@@ -27,7 +27,7 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 void processKeyboard(const Uint8* state);
-void processInput(SDL_Event* event);
+void processMouse(SDL_Event* event);
 
 int main(int argc, char *argv[])
 {
@@ -125,14 +125,6 @@ int main(int argc, char *argv[])
 	glEnableVertexAttribArray(0);
 
 	Shader sceneShader(shadersPath + "shader.vs", shadersPath + "shader.fs");
-	
-
-	// Matrix operations
-	glm::mat4 model = glm::mat4(1.0f);
-
-
-	glm::mat4 projection = glm::mat4(1.0f);
-	projection = glm::perspective(glm::radians(60.0f), 800.0f / 600.0f, 0.1f, 1000.0f);
 
 	// Game loop
 	while (running)
@@ -143,9 +135,14 @@ int main(int argc, char *argv[])
 
 		sceneShader.use();
 
+		glm::mat4 model = glm::mat4(1.0f);
 		sceneShader.setUniform("model", model);
+
 		glm::mat4 view = sceneCamera.getViewMatrix();
 		sceneShader.setUniform("view", view);
+
+		glm::mat4 projection = glm::mat4(1.0f);
+		projection = glm::perspective(glm::radians(sceneCamera.fov), 800.0f / 600.0f, 0.1f, 1000.0f);
 		sceneShader.setUniform("projection", projection);
 
 		glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -160,7 +157,7 @@ int main(int argc, char *argv[])
 		processKeyboard(kbstate);
 		while (SDL_PollEvent(&userEvent))
 		{
-			processInput(&userEvent);
+			processMouse(&userEvent);
 		}
 	}
 	cout << "Quitting SDL" << endl;
@@ -189,11 +186,13 @@ void processKeyboard(const Uint8* state)
 		sceneCamera.processKeyboard("DOWN", deltaTime);
 }
 
-void processInput(SDL_Event* event)
+void processMouse(SDL_Event* event)
 {
 	switch (event->type)
 	{
-		
+		case SDL_MOUSEWHEEL:
+			sceneCamera.processScroll(event->wheel.y, deltaTime);
+			break;
 		case SDL_MOUSEMOTION:
 			sceneCamera.processMouse(event->motion.xrel, event->motion.yrel);
 			break;

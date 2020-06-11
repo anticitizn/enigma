@@ -14,9 +14,11 @@ class Camera {
 public:
 	float yaw = 90.0f;
 	float pitch = 0.0f;
+	float fov = 60.0f;
 
-	const float moveSpeed = 0.1f;
-	const float lookSpeed = 0.5f;
+	const float moveSpeed = 0.005f;
+	const float lookSpeed = 0.2f;
+	const float scrollSpeed = 0.5f;
 
 	glm::vec3 front;
 	glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -26,18 +28,19 @@ public:
 
 	void processKeyboard(const string direction, const float deltaTime)
 	{
+		float velocity = moveSpeed * deltaTime;
 		if (direction == "FRONT")
-			position += moveSpeed * front;
+			position += velocity * front;
 		if (direction == "BACK")
-			position -= moveSpeed * front;
+			position -= velocity * front;
 		if (direction == "RIGHT")
-			position += moveSpeed * right;
+			position += velocity * right;
 		if (direction == "LEFT")
-			position -= moveSpeed * right;
+			position -= velocity * right;
 		if (direction == "UP")
-			position += moveSpeed * up;
+			position += velocity * up;
 		if (direction == "DOWN")
-			position -= moveSpeed * up;
+			position -= velocity * up;
 
 		calculateVectors();
 	}
@@ -56,6 +59,16 @@ public:
 			pitch = -89.0f;
 
 		calculateVectors();
+	}
+
+	void processScroll(float y, float deltaTime)
+	{
+		y *= scrollSpeed;
+		fov -= y * deltaTime;
+		if (fov < 15.0f)
+			fov = 15.0f;
+		if (fov > 90.0f)
+			fov = 90.0f;
 	}
 
 	glm::mat4 getViewMatrix() 
