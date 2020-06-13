@@ -26,7 +26,7 @@ public:
 
 	glm::vec3 position = glm::vec3(0.0f);
 
-	void processKeyboard(const string direction, const float deltaTime)
+	void processKeyboard(const string direction, const float deltaTime)       
 	{
 		float velocity = moveSpeed * deltaTime;
 		if (direction == "FRONT")
@@ -82,7 +82,6 @@ public:
 	}
 
 private:
-
 	void calculateVectors()
 	{
 		front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));

@@ -25,9 +25,14 @@
   <ItemGroup>
     <None Include="dependencies\include\shaders\shader.vs" />
     <None Include="dependencies\include\shaders\shader.fs" />
+    <None Include="dependencies\include\shaders\lampshader.fs" />
+    <None Include="dependencies\include\shaders\lampshader.vs" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dependencies\include\shaders\shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
